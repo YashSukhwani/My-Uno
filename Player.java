@@ -9,14 +9,17 @@ public class Player {
 	GameHandler master;
 	Scanner sc;
 	boolean cardsDealt;
+	boolean isAI;
 	
 	/**
 	 * Constructor for the Player class.
 	 */
-	public Player(String name, GameHandler master) {
+	public Player(String name, GameHandler master, boolean isAI) {
 		this.name = name;
 		this.cards = null;
 		this.master = master;
+		this.isAI = isAI;
+		
 		sc = new Scanner(System.in);
 	}
 	
@@ -28,56 +31,75 @@ public class Player {
 		System.out.println("Please enter your name to join the game.\n");
 		String name = sc.nextLine();
 		
-		master.addPlayer(name);
+		master.addPlayer(name, this);
 	}
 	
 	/**
 	 * This function requests the Game Master to deal the player a starting hand.
 	 */
-	public void getStartHand() {
+	public boolean getStartHand() {
 		if (!cardsDealt) {
 			cards = master.dealCards();
 			cardsDealt = true;
 		} else {
-			return;
+			return false;
 		}
 		
 		if (cards == null) {
 			System.out.println("Error! Must build deck before + dealing!");
+			return false;
 		}
+		
+		return true;
 	}
 	
 	/**
-	 * This function enables the user to decide and choose which card from their hand to play.
+	 * This function implements the baseline AI logic.
 	 */
-	private void decideMove() {
-		do {
-			System.out.println("What move would you like to play?");
-			Card topCard = master.lastDiscarded;
-			System.out.println("TopCard has color & value: " + topCard.color + ", " + topCard.value + " respectively.");
-			System.out.println("Your cards are:");
-			for (int i = 0; i < cards.size(); i++) {
-				System.out.println("Position in hand: " + i + ", Color: " + cards.get(i).color + ", Value: " + cards.get(i).value);
+	public void baselineAI() {
+		for (Card card: cards) {
+			if (master.checkMove(card, true)) {
+				playCard(card);
+				
 			}
-			System.out.println("Enter the Position in hand of the card you wish to play. Else, enter -1 to pick up a card.");
-			
-			int answer = sc.nextInt();
-			if (answer == -1) {
-				this.pickupCard();
-				break;
-			} else if (answer >= 0 && answer < cards.size()) {
-				playCard(cards.get(answer));
-				break;
-			} else {
-				System.out.println("Enter a valid decision please!");
-			}
-		} while (true);
+		}
+		
+		pickupCard();
+		
 	}
+	
+	
+	/**
+	 * Chooisng color when playing a wild card as AI.
+	 * @return
+	 */
+	public String wildChoosing() {
+		int red = 0;
+		int blue = 0;
+		int yellow = 0;
+		int green = 0;
+		String argMax = null;
+		
+		for (Card card: cards) {
+			if (card.color == "Red") {
+				red += 1;
+			} else if (card.color == "Blue") {
+				blue += 1;
+			} else if (card.color == "Green") {
+				green += 1;
+			} else if (card.color == "Yellow" ) {
+				yellow += 1;
+			}
+		}
+		
+		return argMax;
+	}
+
 	
 	/**
 	 * This function executes the actual playing of a card by the player.
 	 */
-	private void playCard(Card card) {
+	public boolean playCard(Card card) {
 		boolean acceptFlag = master.handleMove(card, this.name, cards.size());
 		
 		if (acceptFlag) {
@@ -91,7 +113,10 @@ public class Player {
 					System.err.println(this.name + "has a " + unoCard.value + ".");
 				}
 			}
-		}
+			return true;
+		} else {
+			return false;
+		}	
 		
 	}
 	

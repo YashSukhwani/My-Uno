@@ -37,7 +37,7 @@ class Tests {
 	@Test
 	void checkShuffle() {
 		GameMaster master = new GameMaster();
-		Player player = new Player("Yash", master);
+		Player player = new Player("Yash", master, false);
 		
 		
 		player.joinGame();

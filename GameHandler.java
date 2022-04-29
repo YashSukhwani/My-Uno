@@ -15,6 +15,7 @@ abstract class GameHandler {
 	private Scanner sc;
 	private int stackCount;
 	private String stackType;
+	ArrayList<Player> players;
 	
 	private boolean isGameInitialized;
 	int moveCounter;
@@ -33,6 +34,8 @@ abstract class GameHandler {
 		changedColor = null;
 		lastDiscarded = null;
 		
+		players = new ArrayList<>();
+		
 		this.rand = new Random();
 		sc = new Scanner(System.in);
 	}
@@ -40,8 +43,9 @@ abstract class GameHandler {
 	/**
 	 * Players use this function to enter the game. The order of turns follows the order of entry into the game.
 	 */
-	public void addPlayer(String name) {
+	public void addPlayer(String name, Player player) {
 		playerOrder.add(name);
+		players.add(player);
 	}
 	
 	/**
@@ -101,21 +105,26 @@ abstract class GameHandler {
 	 * This function initializes the Uno game, with a draw pile and a discard pile and a starting card.
 	 * The player turn order already exists by this point.
 	 */
-	public void initializeGame() {
+	public Card initializeGame() {
 		this.discardPile = new ArrayList<>();
 		
 		String startFace = null;
 		int loopControl = 0;
+		Card startCard = null;
 		
 		while (loopControl == 0) {
 			int cardIndex = rand.nextInt(deckSize);
 			
 			if (!drawPile.get(cardIndex).isSpecial) {
-				discardPile.add(drawPile.remove(cardIndex));
+				startCard = drawPile.remove(cardIndex);
+				discardPile.add(startCard);
+				
 				isGameInitialized = true;
 				loopControl = 1;
 			}
 		}
+		
+		return startCard;
 	}
 	
 	/**
@@ -188,7 +197,7 @@ abstract class GameHandler {
 			return false;
 		}
 		
-		if (checkMove(card)) {
+		if (checkMove(card, false)) {
 			handleWildColorChange(card);
 			handleCard(card, playerTurn);
 			
@@ -237,7 +246,7 @@ abstract class GameHandler {
 	/**
 	 * This function validates whether a move played by a player is correct and should indeed be processed.
 	 */
-	private boolean checkMove(Card card) {
+	public boolean checkMove(Card card, boolean aiTesting) {
 		String currValue = discardPile.get(0).value;
 		String currColor = discardPile.get(0).color;
 		

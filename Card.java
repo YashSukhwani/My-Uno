@@ -17,4 +17,12 @@ public class Card {
 		this.isSpecial = isSpecial;
 		
 	}
+	
+	public String getCardName() {
+		if (this.color != null) {
+			return this.color + " " + this.value;
+		} else {
+			return this.value;
+		}
+	}
 }
